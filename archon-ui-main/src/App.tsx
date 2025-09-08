@@ -6,6 +6,7 @@ import { KnowledgeBasePage } from './pages/KnowledgeBasePage';
 import { SettingsPage } from './pages/SettingsPage';
 import { MCPPage } from './pages/MCPPage';
 import { OnboardingPage } from './pages/OnboardingPage';
+import CodingAgents from './pages/CodingAgents';
 import { MainLayout } from './components/layout/MainLayout';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { ToastProvider } from './contexts/ToastContext';
@@ -49,6 +50,7 @@ const AppRoutes = () => {
       <Route path="/" element={<KnowledgeBasePage />} />
       <Route path="/onboarding" element={<OnboardingPage />} />
       <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/coding-agents" element={<CodingAgents />} />
       <Route path="/mcp" element={<MCPPage />} />
       {projectsEnabled ? (
         <>

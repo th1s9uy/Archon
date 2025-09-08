@@ -305,6 +305,22 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
               console.log('🔄 [VITE PROXY] Forwarding:', req.method, req.url, 'to', `http://${host}:${port}${req.url}`);
             });
           }
+        },
+        // Proxy for ACP backend on localhost:3001
+        '/acp': {
+          target: 'http://localhost:3001',
+          changeOrigin: true,
+          secure: false,
+          rewrite: (path) => path.replace(/^\/acp/, ''),
+          configure: (proxy, options) => {
+            proxy.on('error', (err, req, res) => {
+              console.log('🚨 [ACP PROXY ERROR]:', err.message);
+              console.log('🚨 [ACP PROXY ERROR] Request:', req.url);
+            });
+            proxy.on('proxyReq', (proxyReq, req, res) => {
+              console.log('🔄 [ACP PROXY] Forwarding:', req.method, req.url, 'to localhost:3001');
+            });
+          }
         }
       },
     },
