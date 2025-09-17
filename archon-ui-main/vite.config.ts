@@ -308,6 +308,23 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
             });
           }
         },
+// <<<<<<< lava-retail
+//         // Proxy for ACP backend on localhost:3001
+//         '/acp': {
+//           target: 'http://localhost:3001',
+//           changeOrigin: true,
+//           secure: false,
+//           rewrite: (path) => path.replace(/^\/acp/, ''),
+//           configure: (proxy, options) => {
+//             proxy.on('error', (err, req, res) => {
+//               console.log('🚨 [ACP PROXY ERROR]:', err.message);
+//               console.log('🚨 [ACP PROXY ERROR] Request:', req.url);
+//             });
+//             proxy.on('proxyReq', (proxyReq, req, res) => {
+//               console.log('🔄 [ACP PROXY] Forwarding:', req.method, req.url, 'to localhost:3001');
+//             });
+//           }
+// =======
         // Health check endpoint proxy
         '/health': {
           target: `http://${host}:${port}`,
@@ -319,6 +336,7 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
           target: `http://${host}:${port}`,
           changeOrigin: true,
           ws: true
+// >>>>>>> main
         }
       },
     },
