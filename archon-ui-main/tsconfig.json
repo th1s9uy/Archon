@@ -5,6 +5,7 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -20,8 +21,10 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
 
-    /* Path mapping */
-    "paths": { "@/*": ["./src/*"] }
+    /* ======= */
+    "paths": { "@/*": ["./src/*"] },
+    "outDir": "./dist"
+/* >>>>>>> lava-retail */
   },
   "include": ["src", "tests"],
   "references": [{ "path": "./tsconfig.node.json" }]
