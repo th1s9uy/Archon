@@ -305,6 +305,22 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
               console.log('🔄 [VITE PROXY] Forwarding:', req.method, req.url, 'to', `http://${host}:${port}${req.url}`);
             });
           }
+        },
+        // Proxy for ACP backend on localhost:3001
+        '/acp': {
+          target: 'http://localhost:3001',
+          changeOrigin: true,
+          secure: false,
+          rewrite: (path) => path.replace(/^\/acp/, ''),
+          configure: (proxy, options) => {
+            proxy.on('error', (err, req, res) => {
+              console.log('🚨 [ACP PROXY ERROR]:', err.message);
+              console.log('🚨 [ACP PROXY ERROR] Request:', req.url);
+            });
+            proxy.on('proxyReq', (proxyReq, req, res) => {
+              console.log('🔄 [ACP PROXY] Forwarding:', req.method, req.url, 'to localhost:3001');
+            });
+          }
         }
       },
     },
@@ -321,15 +337,18 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
     test: {
       globals: true,
       environment: 'jsdom',
-      setupFiles: './test/setup.ts',
+      setupFiles: './tests/setup.ts',
       css: true,
+      include: [
+        'src/**/*.{test,spec}.{ts,tsx}',  // Tests colocated in features
+        'tests/**/*.{test,spec}.{ts,tsx}'  // Tests in tests directory
+      ],
       exclude: [
         '**/node_modules/**',
         '**/dist/**',
         '**/cypress/**',
         '**/.{idea,git,cache,output,temp}/**',
-        '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
-        '**/*.test.{ts,tsx}',
+        '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*'
       ],
       env: {
         VITE_HOST: host,
@@ -340,7 +359,7 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
         reporter: ['text', 'json', 'html'],
         exclude: [
           'node_modules/',
-          'test/',
+          'tests/',
           '**/*.d.ts',
           '**/*.config.*',
           '**/mockData.ts',
