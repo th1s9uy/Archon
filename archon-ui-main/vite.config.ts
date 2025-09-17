@@ -18,6 +18,8 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
   const isDocker = process.env.DOCKER_ENV === 'true' || existsSync('/.dockerenv');
   const internalHost = 'archon-server';  // Docker service name for internal communication
   const externalHost = process.env.HOST || 'localhost';  // Host for external access
+  // CRITICAL: For proxy target, always use internal host in Docker
+  const proxyHost = isDocker ? internalHost : externalHost;
   const host = isDocker ? internalHost : externalHost;
   const port = process.env.ARCHON_SERVER_PORT || env.ARCHON_SERVER_PORT || '8181';
   
@@ -292,40 +294,56 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
       })(),
       proxy: {
         '/api': {
-          target: `http://${host}:${port}`,
+          target: `http://${proxyHost}:${port}`,
           changeOrigin: true,
           secure: false,
           configure: (proxy, options) => {
             proxy.on('error', (err, req, res) => {
               console.log('🚨 [VITE PROXY ERROR]:', err.message);
-              console.log('🚨 [VITE PROXY ERROR] Target:', `http://${host}:${port}`);
+              console.log('🚨 [VITE PROXY ERROR] Target:', `http://${proxyHost}:${port}`);
               console.log('🚨 [VITE PROXY ERROR] Request:', req.url);
             });
             proxy.on('proxyReq', (proxyReq, req, res) => {
-              console.log('🔄 [VITE PROXY] Forwarding:', req.method, req.url, 'to', `http://${host}:${port}${req.url}`);
+              console.log('🔄 [VITE PROXY] Forwarding:', req.method, req.url, 'to', `http://${proxyHost}:${port}${req.url}`);
             });
           }
         },
-        // Proxy for ACP backend on localhost:3001
-        '/acp': {
-          target: 'http://localhost:3001',
+// <<<<<<< lava-retail
+//         // Proxy for ACP backend on localhost:3001
+//         '/acp': {
+//           target: 'http://localhost:3001',
+//           changeOrigin: true,
+//           secure: false,
+//           rewrite: (path) => path.replace(/^\/acp/, ''),
+//           configure: (proxy, options) => {
+//             proxy.on('error', (err, req, res) => {
+//               console.log('🚨 [ACP PROXY ERROR]:', err.message);
+//               console.log('🚨 [ACP PROXY ERROR] Request:', req.url);
+//             });
+//             proxy.on('proxyReq', (proxyReq, req, res) => {
+//               console.log('🔄 [ACP PROXY] Forwarding:', req.method, req.url, 'to localhost:3001');
+//             });
+//           }
+// =======
+        // Health check endpoint proxy
+        '/health': {
+          target: `http://${host}:${port}`,
           changeOrigin: true,
-          secure: false,
-          rewrite: (path) => path.replace(/^\/acp/, ''),
-          configure: (proxy, options) => {
-            proxy.on('error', (err, req, res) => {
-              console.log('🚨 [ACP PROXY ERROR]:', err.message);
-              console.log('🚨 [ACP PROXY ERROR] Request:', req.url);
-            });
-            proxy.on('proxyReq', (proxyReq, req, res) => {
-              console.log('🔄 [ACP PROXY] Forwarding:', req.method, req.url, 'to localhost:3001');
-            });
-          }
+          secure: false
+        },
+        // Socket.IO specific proxy configuration
+        '/socket.io': {
+          target: `http://${host}:${port}`,
+          changeOrigin: true,
+          ws: true
+// >>>>>>> main
         }
       },
     },
     define: {
-      'import.meta.env.VITE_HOST': JSON.stringify(host),
+      // CRITICAL: Don't inject Docker internal hostname into the build
+      // The browser can't resolve 'archon-server'
+      'import.meta.env.VITE_HOST': JSON.stringify(isDocker ? 'localhost' : host),
       'import.meta.env.VITE_PORT': JSON.stringify(port),
       'import.meta.env.PROD': env.PROD === 'true',
     },

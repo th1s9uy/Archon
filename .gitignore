@@ -9,6 +9,10 @@ PRPs/completed/
 .zed
 tmp/
 temp/
+# <<<<<<< lava-retail
 # =======
 /volumes/
 # >>>>>>> lava-retail
+# =======
+UAT/
+# >>>>>>> main
